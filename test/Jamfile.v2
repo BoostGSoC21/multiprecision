@@ -734,6 +734,14 @@ test-suite conversions :
                release # Otherwise [ runtime is slow
               : test_float_io_cpp_dec_float ]
 
+      [ run test_float_io.cpp no_eh_support
+              : # command line
+              : # input files
+              : # requirements
+              <define>TEST_CPP_DEC_FLOAT <define>BOOST_MP_STANDALONE
+               release # Otherwise [ runtime is slow
+              : test_float_io_cpp_dec_float_standalone ]
+
       [ run test_float_io.cpp gmp no_eh_support
               : # command line
               : # input files
@@ -1235,6 +1243,9 @@ test-suite misc :
       [ run git_issue_313.cpp ]
       [ run git_issue_488.cpp ]
       [ run git_issue_506.cpp ]
+      [ run git_issue_509.cpp : : : [ requires cpp_lib_bit_cast ] ]
+      [ run git_issue_526.cpp ]
+      [ run git_issue_540.cpp ]
       [ compile git_issue_98.cpp : 
          [ check-target-builds ../config//has_float128 : <define>TEST_FLOAT128 <source>quadmath : ]
          [ check-target-builds ../config//has_gmp : <define>TEST_GMP <source>gmp : ]
@@ -1273,6 +1284,7 @@ test-suite misc :
       [ run test_eigen_interop_gmp.cpp gmp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] [ check-target-builds ../config//has_gmp : : <build>no ] ]
       [ run test_eigen_interop_gmp_2.cpp gmp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] [ check-target-builds ../config//has_gmp : : <build>no ] ]
       [ run test_eigen_interop_mpc.cpp mpc mpfr gmp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] [ check-target-builds ../config//has_mpc : : <build>no ] ]
+      [ run test_eigen_interop_cpp_complex.cpp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] ]
       [ compile git_issue_393.cpp : release [ check-target-builds ../config//has_eigen : : <build>no ] ]
 ;
 
