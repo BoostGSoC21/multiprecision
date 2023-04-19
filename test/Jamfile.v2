@@ -296,11 +296,10 @@ rule get_function_tests
               : # requirements
                <define>TEST_CPP_BIN_FLOAT
               : $(source:B)_cpp_bin_float ] ;
-         result += [ run $(source) quadmath no_eh_support
+         result += [ run $(source) no_eh_support
               : # command line
               : # input files
               : # requirements
-               [ check-target-builds ../config//has_float128 : : <build>no ]
                <define>TEST_CPP_DOUBLE_FLOAT
               : $(source:B)_cpp_double_fp ] ;
          result += [ run $(source) quadmath no_eh_support
@@ -734,6 +733,14 @@ test-suite conversions :
               <define>TEST_CPP_DEC_FLOAT
                release # Otherwise [ runtime is slow
               : test_float_io_cpp_dec_float ]
+
+      [ run test_float_io.cpp no_eh_support
+              : # command line
+              : # input files
+              : # requirements
+              <define>TEST_CPP_DEC_FLOAT <define>BOOST_MP_STANDALONE
+               release # Otherwise [ runtime is slow
+              : test_float_io_cpp_dec_float_standalone ]
 
       [ run test_float_io.cpp gmp no_eh_support
               : # command line
@@ -1236,6 +1243,9 @@ test-suite misc :
       [ run git_issue_313.cpp ]
       [ run git_issue_488.cpp ]
       [ run git_issue_506.cpp ]
+      [ run git_issue_509.cpp : : : [ requires cpp_lib_bit_cast ] ]
+      [ run git_issue_526.cpp ]
+      [ run git_issue_540.cpp ]
       [ compile git_issue_98.cpp : 
          [ check-target-builds ../config//has_float128 : <define>TEST_FLOAT128 <source>quadmath : ]
          [ check-target-builds ../config//has_gmp : <define>TEST_GMP <source>gmp : ]
@@ -1274,6 +1284,7 @@ test-suite misc :
       [ run test_eigen_interop_gmp.cpp gmp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] [ check-target-builds ../config//has_gmp : : <build>no ] ]
       [ run test_eigen_interop_gmp_2.cpp gmp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] [ check-target-builds ../config//has_gmp : : <build>no ] ]
       [ run test_eigen_interop_mpc.cpp mpc mpfr gmp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] [ check-target-builds ../config//has_mpc : : <build>no ] ]
+      [ run test_eigen_interop_cpp_complex.cpp : : : release [ check-target-builds ../config//has_eigen : : <build>no ] ]
       [ compile git_issue_393.cpp : release [ check-target-builds ../config//has_eigen : : <build>no ] ]
 ;
 
@@ -1518,17 +1529,14 @@ rule get_specfun_tests_cpp_double_double
    local result ;
    for local source in [ glob math/*.cpp ]
    {
-      result += [ run $(source) quadmath 
-            /boost/test//boost_unit_test_framework/<link>static 
-            math/instances//test_instances_cpp_double_double/<link>static
+      result += [ run $(source) /boost/test//boost_unit_test_framework/<link>static 
+               math/instances//test_instances_cpp_double_double/<link>static
            : # command line
            : # input files
            : # requirements
-            [ check-target-builds ../config//has_float128 : : <build>no ]
-            <optimization>speed
+            [ check-target-builds ../config//has_float128 : <source>quadmath ]
             <define>TEST_CPP_DOUBLE_FLOAT
             <define>BOOST_ALL_NO_LIB
-            <define>BOOST_OPTIONAL_USE_OLD_DEFINITION_OF_NONE
             <toolset>msvc:<cxxflags>-bigobj
             <include>../../math/include_private
             release
