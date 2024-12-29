@@ -12,6 +12,7 @@
 #include "table_type.hpp"
 
 #include <boost/math/special_functions/math_fwd.hpp>
+#include <boost/math/special_functions/bessel.hpp>
 #include "libs/math/test/test_bessel_k.hpp"
 
 void expected_results()
@@ -64,6 +65,13 @@ void expected_results()
        ".*cpp_bin_float.*", // test type(s)
        ".*",                // test data group
        ".*", 300, 150);     // test function
+   add_expected_result(
+       ".*",                    // compiler
+       ".*",                    // stdlib
+       ".*",                    // platform
+       ".*cpp_double_double.*", // test type(s)
+       ".*",                    // test data group
+       ".*", 80, 30);           // test function
    add_expected_result(
        ".*",          // compiler
        ".*",          // stdlib

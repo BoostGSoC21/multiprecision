@@ -1,7 +1,30 @@
 ///////////////////////////////////////////////////////////////
-//  Copyright 2011-9 John Maddock. Distributed under the Boost
+//  Copyright 2011-21 John Maddock. Distributed under the Boost
 //  Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
+
+//
+// This is the main entry point for our operator performance test suite.
+// In order to build this program, you must compile and link this file against
+// all the libs/multiprecision/performance/performance_test_files/*.cpp files.
+// 
+// The default behaviour is to "test everything", which is probably not what you want.
+// In order to restict testing to a specific selection of backends, you will need to
+// define one or more of the following macros when building:
+// 
+// TEST_MPF
+// TEST_MPZ
+// TEST_CPP_DEC_FLOAT
+// TEST_MPFR
+// TEST_MPQ
+// TEST_TOMMATH
+// TEST_TOMMATH_BOOST_RATIONAL
+// TEST_MPZ_BOOST_RATIONAL
+// TEST_CPP_INT
+// TEST_CPP_INT_RATIONAL
+// TEST_CPP_BIN_FLOAT
+// TEST_CPP_DOUBLE_FLOAT
+//
 
 #include "performance_test.hpp"
 
@@ -192,6 +215,7 @@ int main()
    test49();
    test50();
    test51();
+   test52();
 
    quickbook_results();
    return 0;

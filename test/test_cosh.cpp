@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2002 - 2011.
-//  Copyright 2011 John Maddock. Distributed under the Boost
+//  Copyright 2011 John Maddock.
+//  Copyright Christopher Kormanyos 2002 - 2011, 2021 - 2023.
+//  Distributed under the Boost
 //  Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
 //
@@ -13,7 +14,7 @@
 #endif
 
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/array.hpp>
+#include <array>
 #include "test.hpp"
 
 #if !defined(TEST_MPF_50) && !defined(TEST_MPF) && !defined(TEST_BACKEND) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR) && !defined(TEST_MPFR_50) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DOUBLE_FLOAT)
@@ -57,17 +58,14 @@
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #endif
 #ifdef TEST_CPP_DOUBLE_FLOAT
-#if defined(BOOST_MATH_USE_FLOAT128)
-#include <boost/multiprecision/float128.hpp>
-#endif
-#include <boost/multiprecision/cpp_double_float.hpp>
+#include <boost/multiprecision/cpp_double_fp.hpp>
 #endif
 
 template <class T>
 void test()
 {
    std::cout << "Testing type: " << typeid(T).name() << std::endl;
-   static const boost::array<const char*, 51u> data =
+   static const std::array<const char*, 51u> data =
        {{
            "1.0560191127459844751259038114395241283965590525302917878166464679729562764239266483419824023679041866569431842053263976225991679105269492268050148624443706785607467750929028856273183654547152707568642275917435773104050171284580773949313906303074811586096214771879801872225500237540725592288167903987152007171391207680034517664218965133028298959753155835975555361514087618679892905973726581183754237665",
            "6.0577917650974496023981039346694689204850927958941226507775366589415588030232830758139222010716099059155799853188868489737439396141346120898610181630988217093945337280471788812956307352429914669334599644412036010014302812555700905490062030666482387008384856645533100266205122930455496234252478878949675888122615795451076521244771554025667181070733415815608287241160724578541982548132473721865287585003",
@@ -186,13 +184,14 @@ int main()
 #endif
 #ifdef TEST_CPP_BIN_FLOAT
    test<boost::multiprecision::cpp_bin_float_50>();
-   test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<35, boost::multiprecision::digit_base_10, std::allocator<char>, boost::long_long_type> > >();
+   test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<35, boost::multiprecision::digit_base_10, std::allocator<char>, long long> > >();
 #endif
 #ifdef TEST_CPP_DOUBLE_FLOAT
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<float> > >();
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<double> > >();
-   #if defined(BOOST_MATH_USE_FLOAT128)
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<boost::multiprecision::float128> > >();
+   test<boost::multiprecision::cpp_double_float>();
+   test<boost::multiprecision::cpp_double_double>();
+   test<boost::multiprecision::cpp_double_long_double>();
+   #if defined(BOOST_HAS_FLOAT128)
+   test<boost::multiprecision::cpp_double_float128>();
    #endif
 #endif
    return boost::report_errors();

@@ -45,6 +45,13 @@ void expected_results()
        ".*",                    // compiler
        ".*",                    // stdlib
        ".*",                    // platform
+       ".*cpp_double_double.*", // test type(s)
+       ".*",                    // test data group
+       ".*", 100000, 60000);    // test function
+   add_expected_result(
+       ".*",                    // compiler
+       ".*",                    // stdlib
+       ".*",                    // platform
        ".*",                    // test type(s)
        ".*(Y[nv]|y).*Random.*", // test data group
        ".*", 70000, 4000);      // test function
@@ -104,6 +111,13 @@ void expected_results()
        ".*cpp_bin_float.*", // test type(s)
        ".*",                // test data group
        ".*", 50000, 20000); // test function
+   add_expected_result(
+       ".*",                // compiler
+       ".*",                // stdlib
+       ".*",                // platform
+       ".*",                // test type(s)
+       "Extra.*",           // test data group
+       ".*", 6000, 3000);   // test function
    add_expected_result(
        ".*",           // compiler
        ".*",           // stdlib

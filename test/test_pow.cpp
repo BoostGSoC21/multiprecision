@@ -1,6 +1,7 @@
 ///////////////////////////////////////////////////////////////
-//  Copyright Christopher Kormanyos 2002 - 2011.
-//  Copyright 2011 John Maddock. Distributed under the Boost
+//  Copyright 2011 John Maddock.
+//  Copyright Christopher Kormanyos 2021 - 2024.
+//  Distributed under the Boost
 //  Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
 //
@@ -13,10 +14,11 @@
 #endif
 
 #include <boost/detail/lightweight_test.hpp>
-#include <boost/array.hpp>
 #include "test.hpp"
 
-#if !defined(TEST_MPF_50) && !defined(TEST_MPF) && !defined(TEST_BACKEND) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR) && !defined(TEST_MPFR_50) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DOUBLE_FLOAT) && !defined(TEST_CPP_QUAD_FLOAT)
+#include <array>
+
+#if !defined(TEST_MPF_50) && !defined(TEST_MPF) && !defined(TEST_BACKEND) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR) && !defined(TEST_MPFR_50) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DOUBLE_FLOAT)
 #define TEST_MPF_50
 //#  define TEST_MPF
 #define TEST_BACKEND
@@ -25,7 +27,6 @@
 #define TEST_MPFI_50
 #define TEST_CPP_BIN_FLOAT
 #define TEST_CPP_DOUBLE_FLOAT
-#define TEST_CPP_QUAD_FLOAT
 
 #ifdef _MSC_VER
 #pragma message("CAUTION!!: No backend type specified so testing everything.... this will take some time!!")
@@ -58,23 +59,14 @@
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #endif
 #ifdef TEST_CPP_DOUBLE_FLOAT
-#if defined(BOOST_MATH_USE_FLOAT128)
-#include <boost/multiprecision/float128.hpp>
-#endif
-#include <boost/multiprecision/cpp_double_float.hpp>
-#endif
-#ifdef TEST_CPP_QUAD_FLOAT
-#if defined(BOOST_MATH_USE_FLOAT128)
-#include <boost/multiprecision/float128.hpp>
-#endif
-#include <boost/multiprecision/cpp_quad_float.hpp>
+#include <boost/multiprecision/cpp_double_fp.hpp>
 #endif
 
 template <class T>
 void test()
 {
    std::cout << "Testing type: " << typeid(T).name() << std::endl;
-   static const boost::array<boost::array<const char*, 3>, 702> data =
+   static const std::array<std::array<const char*, 3>, 702> data =
        {{
            {{"9.85291419463953934609889984130859375e4", "8.4167086266170372255146503448486328125e2", "8.66781019918879108354226292713799369912745098619466567318041467361236175866573114777000418440761829061824953361563557580935951901405814080757565313129904800947783606850513184296612628910656615168927761935861462770335134108408073175949783551491164949747086136599355880600420490275164555515512645668845e4202"}},
            {{"1.652914355109703592461301013827323913574218750e1", "4.936528947862250937816952500725165009498596191406250e-2", "1.14852190138491736562279120519668390081141778746743826681517181158751264571350304943298501284647564489716027476004029804110782430201351750715968215799574772058637701195873519618784612525011353325208230847515250406858209757415407239793739704829281917272032288615255140733409015874140869835291148547238"}},
@@ -820,7 +812,6 @@ void test()
    BOOST_CHECK_EQUAL(pow(T(1), T(2)), 1);
    BOOST_CHECK_EQUAL(pow(T(1), 2), 1);
 
-   #if 0
    if (!boost::multiprecision::is_interval_number<T>::value)
    {
       T bug_case = -1.05 * log((std::numeric_limits<T>::max)()) / log(T(1.01));
@@ -837,7 +828,6 @@ void test()
          }
       }
    }
-   #endif
 }
 
 int main()
@@ -880,22 +870,26 @@ int main()
 #endif
 #ifdef TEST_CPP_BIN_FLOAT
    test<boost::multiprecision::cpp_bin_float_50>();
-   test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<35, boost::multiprecision::digit_base_10, std::allocator<char>, boost::long_long_type> > >();
+   test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<35, boost::multiprecision::digit_base_10, std::allocator<char>, long long> > >();
 #endif
 #ifdef TEST_CPP_DOUBLE_FLOAT
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<float> > >();
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<double> > >();
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<long double> > >();
-   #if defined(BOOST_MATH_USE_FLOAT128)
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<boost::multiprecision::float128> > >();
-   #endif
-#endif
-#ifdef TEST_CPP_DOUBLE_FLOAT
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_quad_float<double> > >();
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_quad_float<long double> > >();
-   #if defined(BOOST_MATH_USE_FLOAT128)
-   test<boost::multiprecision::number<boost::multiprecision::backends::cpp_quad_float<boost::multiprecision::float128> > >();
-   #endif
+   {
+      using boost::multiprecision::cpp_double_double;
+      using boost::multiprecision::cpp_double_long_double;
+      #if defined(BOOST_HAS_FLOAT128)
+      using boost::multiprecision::cpp_double_float128;
+      #endif
+
+      test<cpp_double_double>();
+      test<cpp_double_long_double>();
+      #if defined(BOOST_HAS_FLOAT128)
+      test<cpp_double_float128>();
+      #endif
+
+      #if defined(BOOST_HAS_FLOAT128)
+      test_bug_case<cpp_double_float128>();
+      #endif
+   }
 #endif
    return boost::report_errors();
 }

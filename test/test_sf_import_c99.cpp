@@ -7,7 +7,12 @@
 #pragma warning(disable : 4127) // conditional expression is constant
 #endif
 
-#if !defined(TEST_MPF_50) && !defined(TEST_MPF) && !defined(TEST_BACKEND) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR) && !defined(TEST_MPFR_50) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DEC_FLOAT_2) && !defined(TEST_CPP_DEC_FLOAT_3) && !defined(TEST_CPP_DEC_FLOAT_4) && !defined(TEST_CPP_DEC_FLOAT_5) && !defined(TEST_CPP_DEC_FLOAT_6) && !defined(TEST_CPP_BIN_FLOAT_2) && !defined(TEST_CPP_BIN_FLOAT_3)
+#if !defined(TEST_MPF_50) && !defined(TEST_MPF) && !defined(TEST_BACKEND) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR) \
+         && !defined(TEST_MPFR_50) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && !defined(TEST_CPP_BIN_FLOAT) \
+         && !defined(TEST_CPP_DEC_FLOAT_2) && !defined(TEST_CPP_DEC_FLOAT_3) && !defined(TEST_CPP_DEC_FLOAT_4) \
+         && !defined(TEST_CPP_DEC_FLOAT_5) && !defined(TEST_CPP_DEC_FLOAT_6) && !defined(TEST_CPP_BIN_FLOAT_2) && !defined(TEST_CPP_BIN_FLOAT_3) \
+         && !defined(TEST_MPFI_DEBUG_ADAPTOR) && !defined(TEST_MPFR_DEBUG_ADAPTOR) && !defined(TEST_MPFI_LOGGED_ADAPTOR) && !defined(TEST_MPFR_LOGGED_ADAPTOR) \
+         && !defined(TEST_CPP_DOUBLE_FLOAT)
 #define TEST_MPF_50
 #define TEST_MPFR_50
 #define TEST_MPFI_50
@@ -21,6 +26,11 @@
 #define TEST_CPP_BIN_FLOAT
 #define TEST_CPP_BIN_FLOAT_2
 #define TEST_CPP_BIN_FLOAT_3
+#define TEST_MPFI_DEBUG_ADAPTOR
+#define TEST_MPFR_DEBUG_ADAPTOR
+#define TEST_MPFI_LOGGED_ADAPTOR
+#define TEST_MPFR_LOGGED_ADAPTOR
+#define TEST_CPP_DOUBLE_FLOAT
 
 #ifdef _MSC_VER
 #pragma message("CAUTION!!: No backend type specified so testing everything.... this will take some time!!")
@@ -49,6 +59,26 @@
 #endif
 #ifdef TEST_FLOAT128
 #include <boost/multiprecision/float128.hpp>
+#endif
+#ifdef TEST_MPFI_DEBUG_ADAPTOR
+#  include <boost/multiprecision/mpfi.hpp>
+#  include <boost/multiprecision/debug_adaptor.hpp>
+#endif
+#ifdef TEST_MPFR_DEBUG_ADAPTOR
+#  include <boost/multiprecision/mpfr.hpp>
+#  include <boost/multiprecision/debug_adaptor.hpp>
+#endif
+#ifdef TEST_MPFI_LOGGED_ADAPTOR
+#  include <boost/multiprecision/mpfi.hpp>
+#  include <boost/multiprecision/logged_adaptor.hpp>
+#endif
+#ifdef TEST_MPFR_LOGGED_ADAPTOR
+#  include <boost/multiprecision/mpfr.hpp>
+#  include <boost/multiprecision/logged_adaptor.hpp>
+#endif
+
+#ifdef TEST_CPP_DOUBLE_FLOAT
+#include <boost/multiprecision/cpp_double_fp.hpp>
 #endif
 
 #include <boost/math/constants/constants.hpp>
@@ -317,13 +347,27 @@ void test()
    }
    s   = 8 * std::numeric_limits<T>::epsilon();
    val = 2.5;
-   BOOST_CHECK_CLOSE_FRACTION(asinh(val), T("1.6472311463710957106248586104436196635044144301932365282203100930843983757633104078778420255069424907777006132075516484778755360595913172299093829522950397895699619540523579875476513967578478619028438291006578604823887119907434"), s);
-   BOOST_CHECK_CLOSE_FRACTION(asinh(val + T(0)), T("1.6472311463710957106248586104436196635044144301932365282203100930843983757633104078778420255069424907777006132075516484778755360595913172299093829522950397895699619540523579875476513967578478619028438291006578604823887119907434"), s);
+   {
+      #if defined(TEST_CPP_DOUBLE_FLOAT)
+      const auto my_s = s * 3;
+      #else
+      const auto my_s = s;
+      #endif
+      BOOST_CHECK_CLOSE_FRACTION(asinh(val), T("1.6472311463710957106248586104436196635044144301932365282203100930843983757633104078778420255069424907777006132075516484778755360595913172299093829522950397895699619540523579875476513967578478619028438291006578604823887119907434"), my_s);
+      BOOST_CHECK_CLOSE_FRACTION(asinh(val + T(0)), T("1.6472311463710957106248586104436196635044144301932365282203100930843983757633104078778420255069424907777006132075516484778755360595913172299093829522950397895699619540523579875476513967578478619028438291006578604823887119907434"), my_s);
+   }
    BOOST_CHECK_CLOSE_FRACTION(acosh(val), T("1.5667992369724110786640568625804834938620823510926588639329459980122148134693922696279968499622201141051039184050936311066453565386393240356562374302417843319480223211857615778787272615171906055455922537080327062362258846337050"), s);
    BOOST_CHECK_CLOSE_FRACTION(acosh(val + T(0)), T("1.5667992369724110786640568625804834938620823510926588639329459980122148134693922696279968499622201141051039184050936311066453565386393240356562374302417843319480223211857615778787272615171906055455922537080327062362258846337050"), s);
    val = 0.5;
-   BOOST_CHECK_CLOSE_FRACTION(atanh(val), T("0.5493061443340548456976226184612628523237452789113747258673471668187471466093044834368078774068660443939850145329789328711840021129652599105264009353836387053015813845916906835896868494221804799518712851583979557605727959588753"), s);
-   BOOST_CHECK_CLOSE_FRACTION(atanh(val + T(0)), T("0.5493061443340548456976226184612628523237452789113747258673471668187471466093044834368078774068660443939850145329789328711840021129652599105264009353836387053015813845916906835896868494221804799518712851583979557605727959588753"), s);
+   {
+      #if defined(TEST_CPP_DOUBLE_FLOAT)
+      const auto my_s = s * 2;
+      #else
+      const auto my_s = s;
+      #endif
+      BOOST_CHECK_CLOSE_FRACTION(atanh(val), T("0.5493061443340548456976226184612628523237452789113747258673471668187471466093044834368078774068660443939850145329789328711840021129652599105264009353836387053015813845916906835896868494221804799518712851583979557605727959588753"), my_s);
+      BOOST_CHECK_CLOSE_FRACTION(atanh(val + T(0)), T("0.5493061443340548456976226184612628523237452789113747258673471668187471466093044834368078774068660443939850145329789328711840021129652599105264009353836387053015813845916906835896868494221804799518712851583979557605727959588753"), my_s);
+   }
    val = 55.25;
    BOOST_CHECK_CLOSE_FRACTION(cbrt(val), T("3.8087058015466360309383876359583281382991983919300128125378938779672144843676192684301168479657279498120767424724024965319869248797423276064015643361426189576415670917818313417529572608229017809069355688606687557031643655896118"), s);
    BOOST_CHECK_CLOSE_FRACTION(cbrt(val + T(0)), T("3.8087058015466360309383876359583281382991983919300128125378938779672144843676192684301168479657279498120767424724024965319869248797423276064015643361426189576415670917818313417529572608229017809069355688606687557031643655896118"), s);
@@ -601,6 +645,34 @@ bool type_sets_errno(const T&)
 #ifdef TEST_MPFR_50
 template <unsigned Digits10, boost::multiprecision::mpfr_allocation_type AllocateType, boost::multiprecision::expression_template_option ExpressionTemplates>
 bool type_sets_errno(const boost::multiprecision::number<boost::multiprecision::mpfr_float_backend<Digits10, AllocateType>, ExpressionTemplates>&)
+{
+   return false;
+}
+#endif
+#ifdef TEST_MPFR_DEBUG_ADAPTOR
+template <unsigned Digits10, boost::multiprecision::mpfr_allocation_type AllocateType, boost::multiprecision::expression_template_option ExpressionTemplates>
+bool type_sets_errno(const boost::multiprecision::number<boost::multiprecision::debug_adaptor<boost::multiprecision::mpfr_float_backend<Digits10, AllocateType> >, ExpressionTemplates>&)
+{
+   return false;
+}
+#endif
+#ifdef TEST_MPFI_DEBUG_ADAPTOR
+template <unsigned Digits10, boost::multiprecision::expression_template_option ExpressionTemplates>
+bool type_sets_errno(const boost::multiprecision::number<boost::multiprecision::debug_adaptor<boost::multiprecision::mpfi_float_backend<Digits10> >, ExpressionTemplates>&)
+{
+   return false;
+}
+#endif
+#ifdef TEST_MPFR_LOGGED_ADAPTOR
+template <unsigned Digits10, boost::multiprecision::mpfr_allocation_type AllocateType, boost::multiprecision::expression_template_option ExpressionTemplates>
+bool type_sets_errno(const boost::multiprecision::number<boost::multiprecision::logged_adaptor<boost::multiprecision::mpfr_float_backend<Digits10, AllocateType> >, ExpressionTemplates>&)
+{
+   return false;
+}
+#endif
+#ifdef TEST_MPFI_LOGGED_ADAPTOR
+template <unsigned Digits10, boost::multiprecision::expression_template_option ExpressionTemplates>
+bool type_sets_errno(const boost::multiprecision::number<boost::multiprecision::logged_adaptor<boost::multiprecision::mpfi_float_backend<Digits10> >, ExpressionTemplates>&)
 {
    return false;
 }
@@ -2195,7 +2267,7 @@ int main()
    test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<100>, boost::multiprecision::et_on> >();
 #endif
 #ifdef TEST_CPP_BIN_FLOAT_2
-   test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<35, boost::multiprecision::digit_base_10, std::allocator<char>, boost::long_long_type> > >();
+   test<boost::multiprecision::number<boost::multiprecision::cpp_bin_float<35, boost::multiprecision::digit_base_10, std::allocator<char>, long long> > >();
 #endif
 #ifdef TEST_CPP_BIN_FLOAT_3
    test_c99_appendix_F<boost::multiprecision::cpp_bin_float_50>();
@@ -2205,6 +2277,29 @@ int main()
    test<boost::multiprecision::float128>();
    test_c99_appendix_F<boost::multiprecision::float128>();
    test_c99_appendix_F_tgammaq_addon_for_float128<boost::multiprecision::float128>();
+#endif
+#ifdef TEST_MPFI_DEBUG_ADAPTOR
+   test<boost::multiprecision::number<boost::multiprecision::debug_adaptor<boost::multiprecision::mpfi_float_backend<50> > > >();
+   //test_c99_appendix_F<boost::multiprecision::number<boost::multiprecision::debug_adaptor<boost::multiprecision::mpfi_float_backend<50> > > >();
+#endif
+#ifdef TEST_MPFR_DEBUG_ADAPTOR
+   test<boost::multiprecision::number<boost::multiprecision::debug_adaptor<boost::multiprecision::mpfr_float_backend<50> > > >();
+   test_c99_appendix_F<boost::multiprecision::number<boost::multiprecision::debug_adaptor<boost::multiprecision::mpfr_float_backend<50> > > >();
+#endif
+#ifdef TEST_MPFI_LOGGED_ADAPTOR
+   test<boost::multiprecision::number<boost::multiprecision::logged_adaptor<boost::multiprecision::mpfi_float_backend<50> > > >();
+   //test_c99_appendix_F<boost::multiprecision::number<boost::multiprecision::logged_adaptor<boost::multiprecision::mpfi_float_backend<50> > > >();
+#endif
+#ifdef TEST_MPFR_LOGGED_ADAPTOR
+   test<boost::multiprecision::number<boost::multiprecision::logged_adaptor<boost::multiprecision::mpfr_float_backend<50> > > >();
+   test_c99_appendix_F<boost::multiprecision::number<boost::multiprecision::logged_adaptor<boost::multiprecision::mpfr_float_backend<50> > > >();
+#endif
+#ifdef TEST_CPP_DOUBLE_FLOAT
+   test<boost::multiprecision::cpp_double_double>();
+   test<boost::multiprecision::cpp_double_long_double>();
+   #if defined(BOOST_HAS_FLOAT128)
+   test<boost::multiprecision::cpp_double_float128>();
+   #endif
 #endif
 
    return boost::report_errors();

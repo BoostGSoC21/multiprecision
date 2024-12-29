@@ -1,5 +1,7 @@
 ///////////////////////////////////////////////////////////////
-//  Copyright 2011 John Maddock. Distributed under the Boost
+//  Copyright John Maddock 2011.
+//  Copyright Christopher Kormanyos 2023.
+//  Distributed under the Boost
 //  Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at https://www.boost.org/LICENSE_1_0.txt
 
@@ -11,7 +13,8 @@
 
 #if !defined(TEST_MPF_50) && !defined(TEST_MPF) && !defined(TEST_BACKEND) && !defined(TEST_MPZ) &&         \
     !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR) && !defined(TEST_MPFR_50) && !defined(TEST_MPQ) && \
-    !defined(TEST_TOMMATH) && !defined(TEST_CPP_INT) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && !defined(TEST_CPP_BIN_FLOAT)
+    !defined(TEST_TOMMATH) && !defined(TEST_CPP_INT) && !defined(TEST_MPFI_50) && !defined(TEST_FLOAT128) && \
+    !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DOUBLE_FLOAT)
 #define TEST_MPF_50
 #define TEST_MPF
 #define TEST_BACKEND
@@ -25,6 +28,7 @@
 #define TEST_MPFI_50
 #define TEST_FLOAT128
 #define TEST_CPP_BIN_FLOAT
+#define TEST_CPP_DOUBLE_FLOAT
 
 #ifdef _MSC_VER
 #pragma message("CAUTION!!: No backend type specified so testing everything.... this will take some time!!")
@@ -62,6 +66,9 @@
 #ifdef TEST_CPP_BIN_FLOAT
 #include <boost/multiprecision/cpp_bin_float.hpp>
 #endif
+#if defined(TEST_CPP_DOUBLE_FLOAT)
+#include <boost/multiprecision/cpp_double_fp.hpp>
+#endif
 
 #ifdef BOOST_MSVC
 #pragma warning(disable : 4127)
@@ -83,9 +90,9 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
    BOOST_CHECK((boost::math::isnormal)(sqrt(minv)));
    BOOST_CHECK((boost::math::isnormal)(sqrt(maxv)));
 
-   if (std::numeric_limits<Number>::is_specialized)
+   BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::is_specialized)
    {
-      if (std::numeric_limits<Number>::has_quiet_NaN)
+      BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::has_quiet_NaN)
       {
          BOOST_TEST((boost::math::isnan)(std::numeric_limits<Number>::quiet_NaN()));
          BOOST_TEST(FP_NAN == (boost::math::fpclassify)(std::numeric_limits<Number>::quiet_NaN()));
@@ -93,7 +100,7 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
          BOOST_TEST(!(boost::math::isnormal)(std::numeric_limits<Number>::quiet_NaN()));
          BOOST_TEST(!(boost::math::isinf)(std::numeric_limits<Number>::quiet_NaN()));
       }
-      if (std::numeric_limits<Number>::has_signaling_NaN)
+      BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::has_signaling_NaN)
       {
          BOOST_TEST((boost::math::isnan)(std::numeric_limits<Number>::signaling_NaN()));
          BOOST_TEST(FP_NAN == (boost::math::fpclassify)(std::numeric_limits<Number>::signaling_NaN()));
@@ -101,7 +108,7 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
          BOOST_TEST(!(boost::math::isnormal)(std::numeric_limits<Number>::signaling_NaN()));
          BOOST_TEST(!(boost::math::isinf)(std::numeric_limits<Number>::signaling_NaN()));
       }
-      if (std::numeric_limits<Number>::has_infinity)
+      BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::has_infinity)
       {
          BOOST_TEST((boost::math::isinf)(std::numeric_limits<Number>::infinity()));
          BOOST_TEST(FP_INFINITE == (boost::math::fpclassify)(std::numeric_limits<Number>::infinity()));
@@ -109,7 +116,7 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
          BOOST_TEST(!(boost::math::isnormal)(std::numeric_limits<Number>::infinity()));
          BOOST_TEST(!(boost::math::isnan)(std::numeric_limits<Number>::infinity()));
       }
-      if (std::numeric_limits<Number>::has_denorm == std::denorm_present)
+      BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::has_denorm == std::denorm_present)
       {
          BOOST_TEST(FP_SUBNORMAL == (boost::math::fpclassify)(std::numeric_limits<Number>::denorm_min()));
          BOOST_TEST(FP_SUBNORMAL == (boost::math::fpclassify)((std::numeric_limits<Number>::min)() / 2));
@@ -120,6 +127,16 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
          BOOST_TEST(0 == std::numeric_limits<Number>::denorm_min() / 2);
          BOOST_TEST(0 != (std::numeric_limits<Number>::min)() / 2);
          BOOST_TEST(0 != std::numeric_limits<Number>::denorm_min());
+      }
+      BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::has_denorm == std::denorm_absent)
+      {
+         BOOST_TEST(std::numeric_limits<Number>::denorm_min() > 0);
+         BOOST_TEST(!(std::numeric_limits<Number>::denorm_min() > (std::numeric_limits<Number>::min)()));
+         BOOST_TEST(!(std::numeric_limits<Number>::denorm_min() < (std::numeric_limits<Number>::min)()));
+         BOOST_TEST(std::numeric_limits<Number>::denorm_min() == (std::numeric_limits<Number>::min)());
+         BOOST_TEST(FP_NORMAL == (boost::math::fpclassify)(std::numeric_limits<Number>::denorm_min()));
+         BOOST_TEST(FP_NORMAL == (boost::math::fpclassify)(-std::numeric_limits<Number>::denorm_min()));
+         BOOST_TEST(FP_ZERO != (boost::math::fpclassify)(std::numeric_limits<Number>::denorm_min()));
       }
    }
    Number n = 0;
@@ -135,11 +152,11 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
    BOOST_TEST(!(boost::math::isinf)(n));
    BOOST_TEST(!(boost::math::isnan)(n));
 
-   if (std::numeric_limits<Number>::round_style == std::round_to_nearest)
+   BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::round_style == std::round_to_nearest)
    {
       BOOST_CHECK_EQUAL(std::numeric_limits<Number>::round_error(), 0.5);
    }
-   else if (std::numeric_limits<Number>::round_style != std::round_indeterminate)
+   else BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::round_style != std::round_indeterminate)
    {
       // Round error is 1.0:
       BOOST_CHECK_EQUAL(std::numeric_limits<Number>::round_error(), 1);
@@ -154,9 +171,9 @@ void test_specific(const std::integral_constant<int, boost::multiprecision::numb
 template <class Number>
 void test_specific(const std::integral_constant<int, boost::multiprecision::number_kind_integer>&)
 {
-   if (std::numeric_limits<Number>::is_modulo)
+   BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::is_modulo)
    {
-      if (!std::numeric_limits<Number>::is_signed)
+      BOOST_IF_CONSTEXPR(!std::numeric_limits<Number>::is_signed)
       {
          BOOST_TEST(1 + (std::numeric_limits<Number>::max)() == 0);
          BOOST_TEST(--Number(0) == (std::numeric_limits<Number>::max)());
@@ -186,13 +203,13 @@ void test()
    std::cout << "numeric_limits values for type " << typeid(Number).name() << std::endl;
 
    PRINT(is_specialized);
-   if (std::numeric_limits<Number>::is_integer)
+   BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::is_integer)
    {
       std::cout << std::hex << std::showbase;
    }
    std::cout << "max()"
              << " = " << (std::numeric_limits<Number>::max)() << std::endl;
-   if (std::numeric_limits<Number>::is_integer)
+   BOOST_IF_CONSTEXPR(std::numeric_limits<Number>::is_integer)
    {
       std::cout << std::dec;
    }
@@ -230,6 +247,34 @@ void test()
    PRINT(tinyness_before);
    PRINT(round_style);
 }
+
+#ifdef TEST_CPP_DOUBLE_FLOAT
+
+#if !(defined(_MSC_VER) && (_MSC_VER <= 1900))
+template <class Number>
+void test_constexpr_ness()
+{
+   using local_float_type = Number;
+
+   constexpr auto my_max = (std::numeric_limits<local_float_type>::max)();
+   constexpr auto my_min = (std::numeric_limits<local_float_type>::min)();
+   constexpr auto my_eps =  std::numeric_limits<local_float_type>::epsilon();
+   constexpr auto my_nan =  std::numeric_limits<local_float_type>::quiet_NaN();
+   constexpr auto my_inf =  std::numeric_limits<local_float_type>::infinity();
+
+   static_assert(my_max > local_float_type(0), "Error: Can't handle max() in constexpr context");
+   static_assert(my_min > local_float_type(0), "Error: Can't handle min() in constexpr context");
+   static_assert(my_max > my_min,              "Error: Can't handle min()/max() in constexpr context");
+   static_assert(my_eps > local_float_type(0), "Error: Can't handle epsilon() in constexpr context");
+   static_assert(isnan(my_nan), "Error: Can't handle quiet_NaN() in constexpr context");
+   static_assert(isinf(my_inf), "Error: Can't handle infinity() in constexpr context");
+
+   static_assert((local_float_type(1) - my_eps) != local_float_type(1), "Error: Can't resolve epsilon() as the smallest number differing from one in constexpr context");
+}
+
+#endif
+
+#endif
 
 int main()
 {
@@ -283,7 +328,23 @@ int main()
    test<boost::multiprecision::float128>();
 #endif
 #ifdef TEST_CPP_BIN_FLOAT
-   test<boost::multiprecision::cpp_bin_float_50>();
+#endif
+#ifdef TEST_CPP_DOUBLE_FLOAT
+   test<boost::multiprecision::cpp_double_float>();
+   test<boost::multiprecision::cpp_double_double>();
+   test<boost::multiprecision::cpp_double_long_double>();
+   #if defined(BOOST_HAS_FLOAT128)
+   test<boost::multiprecision::cpp_double_float128>();
+   #endif
+
+   #if !(defined(_MSC_VER) && (_MSC_VER <= 1900))
+   test_constexpr_ness<boost::multiprecision::cpp_double_float>();
+   test_constexpr_ness<boost::multiprecision::cpp_double_double>();
+   test_constexpr_ness<boost::multiprecision::cpp_double_long_double>();
+   #endif
+   #if defined(BOOST_HAS_FLOAT128)
+   test_constexpr_ness<boost::multiprecision::cpp_double_float128>();
+   #endif
 #endif
    return boost::report_errors();
 }

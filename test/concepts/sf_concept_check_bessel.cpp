@@ -1,4 +1,5 @@
 //  Copyright John Maddock 2012.
+//  Copyright Christopher Kormanyos 2021 - 2023.
 //  Use, modification and distribution are subject to the
 //  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,6 +8,8 @@
 // This tests that cpp_dec_float_50 meets our
 // conceptual requirements when used with Boost.Math.
 //
+#ifdef BOOST_MP_SF_CONCEPT_TESTS
+
 #ifdef _MSC_VER
 #define _SCL_SECURE_NO_WARNINGS
 #pragma warning(disable : 4800)
@@ -19,7 +22,7 @@
 #include <boost/container_hash/hash.hpp>
 #include <libs/math/test/compile_test/poison.hpp>
 
-#if !defined(TEST_MPF_50) && !defined(TEST_BACKEND) && !defined(TEST_MPZ) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR_50) && !defined(TEST_MPFR_6) && !defined(TEST_MPFR_15) && !defined(TEST_MPFR_17) && !defined(TEST_MPFR_30) && !defined(TEST_CPP_DEC_FLOAT_NO_ET) && !defined(TEST_LOGGED_ADAPTER) && !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DOUBLE_FLOAT) && !defined(TEST_CPP_QUAD_FLOAT)
+#if !defined(TEST_MPF_50) && !defined(TEST_BACKEND) && !defined(TEST_MPZ) && !defined(TEST_CPP_DEC_FLOAT) && !defined(TEST_MPFR_50) && !defined(TEST_MPFR_6) && !defined(TEST_MPFR_15) && !defined(TEST_MPFR_17) && !defined(TEST_MPFR_30) && !defined(TEST_CPP_DEC_FLOAT_NO_ET) && !defined(TEST_LOGGED_ADAPTER) && !defined(TEST_CPP_BIN_FLOAT) && !defined(TEST_CPP_DOUBLE_FLOAT)
 #define TEST_MPF_50
 #define TEST_BACKEND
 #define TEST_MPZ
@@ -33,7 +36,6 @@
 #define TEST_LOGGED_ADAPTER
 #define TEST_CPP_BIN_FLOAT
 #define TEST_CPP_DOUBLE_FLOAT
-#define TEST_CPP_QUAD_FLOAT
 
 #ifdef _MSC_VER
 #pragma message("CAUTION!!: No backend type specified so testing everything.... this will take some time!!")
@@ -63,16 +65,7 @@
 #include <boost/multiprecision/logged_adaptor.hpp>
 #endif
 #ifdef TEST_CPP_DOUBLE_FLOAT
-#if defined(BOOST_MATH_USE_FLOAT128)
-#include <boost/multiprecision/float128.hpp>
-#endif
-#include <boost/multiprecision/cpp_double_float.hpp>
-#endif
-#ifdef TEST_CPP_QUAD_FLOAT
-#if defined(BOOST_MATH_USE_FLOAT128)
-#include <boost/multiprecision/float128.hpp>
-#endif
-#include <boost/multiprecision/cpp_quad_float.hpp>
+#include <boost/multiprecision/cpp_double_fp.hpp>
 #endif
 
 #include <boost/math/special_functions.hpp>
@@ -139,16 +132,9 @@ void foo()
    test_extra(num_t());
 #endif
 #ifdef TEST_CPP_DOUBLE_FLOAT
-   using cpp_double_float_of_double_type =
-      boost::multiprecision::number<boost::multiprecision::backends::cpp_double_float<double>, boost::multiprecision::et_off>;
+   using cpp_double_float_of_double_type = boost::multiprecision::cpp_double_double;
 
    test_extra(cpp_double_float_of_double_type());
-#endif
-#ifdef TEST_CPP_QUAD_FLOAT
-   using cpp_quad_float_of_double_type =
-      boost::multiprecision::number<boost::multiprecision::backends::cpp_quad_float<double>, boost::multiprecision::et_off>;
-
-   test_extra(cpp_quad_float_of_double_type());
 #endif
 }
 
@@ -156,3 +142,12 @@ int main()
 {
    foo();
 }
+
+#else
+
+int main()
+{
+   return 0;
+}
+
+#endif

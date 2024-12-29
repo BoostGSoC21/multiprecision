@@ -71,7 +71,8 @@ test-suite performance :
             performance_test_files/test14.cpp  performance_test_files/test31.cpp  performance_test_files/test48.cpp
             performance_test_files/test15.cpp  performance_test_files/test32.cpp  performance_test_files/test49.cpp
             performance_test_files/test16.cpp  performance_test_files/test33.cpp  performance_test_files/test50.cpp
-            performance_test_files/test17.cpp  performance_test_files/test34.cpp  performance_test_files/test51.cpp            
+            performance_test_files/test17.cpp  performance_test_files/test34.cpp  performance_test_files/test51.cpp
+            performance_test_files/test52.cpp
             /boost/system//boost_system
           : release
           [ check-target-builds ../config//has_gmp : <define>TEST_MPF <define>TEST_MPZ <define>TEST_MPQ <source>gmp : ]
@@ -81,7 +82,6 @@ test-suite performance :
           <define>TEST_CPP_BIN_FLOAT
           <define>TEST_CPP_INT
           <define>TEST_CPP_INT_RATIONAL
-          <define>TEST_MUL_ONLY
           [ requires cxx11_auto_declarations cxx11_allocator ]
           ]
 
@@ -150,11 +150,11 @@ test-suite performance :
           
 [ exe delaunay_test : delaunay_test.cpp /boost/system//boost_system /boost/chrono//boost_chrono ]
 
-[ exe voronoi_performance : voronoi_performance.cpp /boost/system//boost_system /boost/chrono//boost_chrono
-   : release
-          [ check-target-builds ../config//has_gmp : <define>TEST_GMP <source>gmp : ]
-          [ check-target-builds ../config//has_tommath : <define>TEST_TOMMATH <source>$(TOMMATH) : ]
-   ]
+#[ exe voronoi_performance : voronoi_performance.cpp /boost/system//boost_system /boost/chrono//boost_chrono
+#   : release
+#          [ check-target-builds ../config//has_gmp : <define>TEST_GMP <source>gmp : ]
+#          [ check-target-builds ../config//has_tommath : <define>TEST_TOMMATH <source>$(TOMMATH) : ]
+#   ]
 
 [ obj obj_linpack_benchmark_mpfr : linpack-benchmark.cpp
           : release
