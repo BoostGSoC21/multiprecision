@@ -2435,7 +2435,9 @@ constexpr int                     std::numeric_limits<boost::multiprecision::num
 #if defined(BOOST_MP_MATH_AVAILABLE)
 namespace boost { namespace math { namespace policies {
 
-template <class FloatingPointType, class Policy, boost::multiprecision::expression_template_option ExpressionTemplates>
+template <class FloatingPointType,
+          class Policy,
+          boost::multiprecision::expression_template_option ExpressionTemplates>
 struct precision<boost::multiprecision::number<boost::multiprecision::cpp_double_fp_backend<FloatingPointType>, ExpressionTemplates>, Policy>
 {
 private:
@@ -2443,14 +2445,14 @@ private:
 
    using digits_2 = digits2<my_multiprecision_backend_type::my_digits>;
 
+   constexpr static auto d2_prec_condition() noexcept -> bool { return ((digits_2::value <= precision_type::value) || (precision_type::value <= 0)); }
+
 public:
    using precision_type = typename Policy::precision_type;
 
-   using type =
-      typename std::conditional<
-         ((digits_2::value <= precision_type::value) || (precision_type::value <= 0)),
-         digits_2,                  // Default case: Full precision for RealType.
-         precision_type>::type;     // User customized precision.
+   using type = typename std::conditional<d2_prec_condition(),
+                                          digits_2,                // Default case: Full precision for RealType.
+                                          precision_type>::type;   // User customized precision.
 };
 
 } } } // namespace boost::math::policies
