@@ -17,13 +17,25 @@ namespace detail
 {
 
 template <class T>
-auto frexp_impl(T arg, int* expptr) -> T
+auto frexp_impl(T arg, int* expptr) -> typename std::enable_if<std::is_same<float, T>::value ||
+                                                               std::is_same<double, T>::value ||
+                                                               std::is_same<long double, T>::value, T>::type
 {
    // Default to the regular frexp function.
    using std::frexp;
 
    return frexp(arg, expptr);
 }
+
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+template <class T>
+auto frexp_impl(T arg, int* expptr) -> typename std::enable_if<std::is_same<::boost::float128_type, T>::value, T>::type
+{
+   // Default to the quadmath frexpq function.
+
+   return ::frexpq(arg, expptr);
+}
+#endif
 
 } // namespace detail
 

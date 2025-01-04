@@ -12,17 +12,45 @@
 
 #include <boost/config.hpp>
 
-#ifdef BOOST_HAS_FLOAT128
-#  if __has_include(<quadmath.h>)
-#    include <quadmath.h>
-#      ifndef BOOST_MP_HAS_FLOAT128_SUPPORT
-#        define BOOST_MP_HAS_FLOAT128_SUPPORT
-#      endif
-#  endif
+#if defined(BOOST_INTEL) && !defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128) && !defined(BOOST_MP_USE_QUAD)
+#if defined(BOOST_INTEL_CXX_VERSION) && (BOOST_INTEL_CXX_VERSION >= 1310) && defined(__GNUC__)
+#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6))
+#define BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
+#endif
 #endif
 
+#ifndef BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
+#endif
+#endif
+
+#if defined(__GNUC__) && !defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+#define BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
+#endif
+
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+
+extern "C"
+{
+  #include <quadmath.h>
+}
+
+#if !defined(BOOST_HAS_FLOAT128) && defined(__cplusplus)
+namespace boost
+{
+   #if defined(__GNUC__)
+   __extension__ typedef __float128 float128_type;
+   #else
+   typedef __float128 float128_type;
+   #endif
+}
+#endif
+
+#endif // BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
+
 #include <boost/multiprecision/number.hpp>
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
 #include <boost/multiprecision/detail/float128_functions.hpp>
+#endif
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath.hpp>
 
 #include <utility>
@@ -35,7 +63,7 @@ struct is_floating_point_or_float128
    static constexpr auto value =    std::is_same<FloatingPointType, float>::value
                                  || std::is_same<FloatingPointType, double>::value
                                  || std::is_same<FloatingPointType, long double>::value
-#if defined(BOOST_HAS_FLOAT128)
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
                                  || std::is_same<FloatingPointType, ::boost::float128_type>::value
 #endif
                                  ;

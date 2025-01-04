@@ -16,13 +16,24 @@ namespace boost { namespace multiprecision { namespace backends { namespace cpp_
 namespace detail {
 
 template <class T>
-auto sqrt_impl(T x) -> T
+auto sqrt_impl(T x) -> typename std::enable_if<std::is_same<float, T>::value ||
+                                               std::is_same<double, T>::value ||
+                                               std::is_same<long double, T>::value, T>::type
 {
-   // Default to the regular sqrt function.
+   // Default to the quadmath qsqrt function.
    using std::sqrt;
 
    return sqrt(x);
 }
+
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+template <class T>
+auto sqrt_impl(T x) -> typename std::enable_if<std::is_same<::boost::float128_type, T>::value, T>::type
+{
+   // Default to the regular sqrt function.
+   return ::sqrtq(x);
+}
+#endif
 
 } // namespace detail
 

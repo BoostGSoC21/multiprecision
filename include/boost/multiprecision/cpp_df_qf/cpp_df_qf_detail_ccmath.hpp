@@ -10,6 +10,10 @@
 
 #include <boost/config.hpp>
 
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+#include <boost/multiprecision/detail/float128_functions.hpp>
+#endif
+
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_fabs.hpp>
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_floor.hpp>
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_fma.hpp>

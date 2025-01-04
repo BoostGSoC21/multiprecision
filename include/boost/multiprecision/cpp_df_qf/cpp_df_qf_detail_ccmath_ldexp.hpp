@@ -16,13 +16,25 @@ namespace boost { namespace multiprecision { namespace backends { namespace cpp_
 namespace detail {
 
 template <class T>
-auto ldexp_impl(T arg, int expval) -> T
+auto ldexp_impl(T arg, int expval) -> typename std::enable_if<std::is_same<float, T>::value ||
+                                                              std::is_same<double, T>::value ||
+                                                              std::is_same<long double, T>::value, T>::type
 {
    // Default to the regular ldexp function.
    using std::ldexp;
 
    return ldexp(arg, expval);
 }
+
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+template <class T>
+auto ldexp_impl(T arg, int expval) -> typename std::enable_if<std::is_same<::boost::float128_type, T>::value, T>::type
+{
+   // Default to the quadmath ldexpq function.
+
+   return ::ldexpq(arg, expval);
+}
+#endif
 
 } // Namespace detail
 

@@ -160,6 +160,8 @@ void test()
 int main()
 {
    //local::test<std::complex<double> >();
+#if !defined(TEST_CPP_DOUBLE_FLOAT)
+
 #ifdef TEST_MPC
    local::test<boost::multiprecision::mpc_complex_50>();
    local::test<boost::multiprecision::mpc_complex_100>();
@@ -170,18 +172,14 @@ int main()
    local::test<boost::multiprecision::complex128>();
 #endif
 
+#endif // !TEST_CPP_DOUBLE_FLOAT
+
 #if defined(TEST_CPP_DOUBLE_FLOAT)
    {
-      using boost::multiprecision::cpp_double_double;
-      using boost::multiprecision::cpp_double_long_double;
-      #if defined(BOOST_HAS_FLOAT128)
-      using boost::multiprecision::cpp_double_float128;
-      #endif
-
-      local::test<boost::multiprecision::number<boost::multiprecision::complex_adaptor<cpp_double_double>, boost::multiprecision::et_off>>();
-      local::test<boost::multiprecision::number<boost::multiprecision::complex_adaptor<cpp_double_long_double>, boost::multiprecision::et_off>>();
-#if defined(BOOST_HAS_FLOAT128)
-      local::test<boost::multiprecision::number<boost::multiprecision::complex_adaptor<cpp_double_float128>, boost::multiprecision::et_off>>();
+      local::test<boost::multiprecision::number<boost::multiprecision::complex_adaptor<boost::multiprecision::cpp_double_fp_backend<double>>, boost::multiprecision::et_off>>();
+      local::test<boost::multiprecision::number<boost::multiprecision::complex_adaptor<boost::multiprecision::cpp_double_fp_backend<long double>>, boost::multiprecision::et_off>>();
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+      local::test<boost::multiprecision::number<boost::multiprecision::complex_adaptor<boost::multiprecision::cpp_double_fp_backend<::boost::float128_type>>, boost::multiprecision::et_off>>();
 #endif
    }
 #endif

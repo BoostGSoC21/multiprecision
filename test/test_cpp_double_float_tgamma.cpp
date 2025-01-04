@@ -37,13 +37,13 @@ int main()
 {
    using boost::multiprecision::cpp_double_double;
    using boost::multiprecision::cpp_double_long_double;
-#ifdef BOOST_HAS_FLOAT128
+#ifdef BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
    using boost::multiprecision::cpp_double_float128;
 #endif
 
    local::test<cpp_double_double>();
    local::test<cpp_double_long_double>();
-#ifdef BOOST_HAS_FLOAT128
+#ifdef BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
    local::test<cpp_double_float128>();
 #endif
 

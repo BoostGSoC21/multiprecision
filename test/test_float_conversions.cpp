@@ -31,7 +31,7 @@ int main()
    static_assert(!(std::is_convertible<float, cpp_bin_float_half>::value), "Error check");
    static_assert(!(std::is_convertible<double, cpp_bin_float_half>::value), "Error check");
    static_assert(!(std::is_convertible<long double, cpp_bin_float_half>::value), "Error check");
-#ifdef BOOST_HAS_FLOAT128
+#ifdef BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
    static_assert(!(std::is_convertible<__float128, cpp_bin_float_half>::value), "Error check");
 #endif
 

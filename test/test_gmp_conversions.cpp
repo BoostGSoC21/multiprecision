@@ -137,7 +137,7 @@ int main()
    BOOST_TEST(rat.convert_to<float>() == 0.75);
    BOOST_TEST(rat.convert_to<double>() == 0.75);
    BOOST_TEST(rat.convert_to<long double>() == 0.75);
-#ifdef BOOST_HAS_FLOAT128
+#ifdef BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
    BOOST_TEST(rat.convert_to<__float128>() == 0.75);
 #endif
 

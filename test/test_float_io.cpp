@@ -432,7 +432,7 @@ int main()
    test_to_string<boost::multiprecision::cpp_double_long_double>();
    test_round_trip<boost::multiprecision::cpp_double_long_double>();
 
-   #if defined(BOOST_HAS_FLOAT128)
+   #if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
    test<boost::multiprecision::cpp_double_float128>();
    test_to_string<boost::multiprecision::cpp_double_float128>();
    test_round_trip<boost::multiprecision::cpp_double_float128>();

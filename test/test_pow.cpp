@@ -876,17 +876,17 @@ int main()
    {
       using boost::multiprecision::cpp_double_double;
       using boost::multiprecision::cpp_double_long_double;
-      #if defined(BOOST_HAS_FLOAT128)
+      #if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
       using boost::multiprecision::cpp_double_float128;
       #endif
 
       test<cpp_double_double>();
       test<cpp_double_long_double>();
-      #if defined(BOOST_HAS_FLOAT128)
+      #if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
       test<cpp_double_float128>();
       #endif
 
-      #if defined(BOOST_HAS_FLOAT128)
+      #if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
       test_bug_case<cpp_double_float128>();
       #endif
    }

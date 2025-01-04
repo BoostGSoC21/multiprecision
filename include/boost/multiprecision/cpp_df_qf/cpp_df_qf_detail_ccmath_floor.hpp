@@ -16,13 +16,25 @@ namespace boost { namespace multiprecision { namespace backends { namespace cpp_
 namespace detail {
 
 template <class T>
-auto floor_impl(T x) -> T
+auto floor_impl(T x) -> typename std::enable_if<std::is_same<float, T>::value ||
+                                               std::is_same<double, T>::value ||
+                                               std::is_same<long double, T>::value, T>::type
 {
    // Default to the regular floor function.
    using std::floor;
 
    return floor(x);
 }
+
+#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
+template <class T>
+auto floor_impl(T x) -> typename std::enable_if<std::is_same<::boost::float128_type, T>::value, T>::type
+{
+   // Default to the quadmath floorq function.
+
+   return ::floorq(x);
+}
+#endif
 
 } // namespace detail
 
