@@ -12,22 +12,13 @@
 
 #include <boost/config.hpp>
 
-#if defined(BOOST_INTEL) && !defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128) && !defined(BOOST_MP_USE_QUAD)
-#if defined(BOOST_INTEL_CXX_VERSION) && (BOOST_INTEL_CXX_VERSION >= 1310) && defined(__GNUC__)
-#if (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 6))
+#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__has_include)
+#if __has_include(<quadmath.h>)
+
+#if !defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
 #define BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
 #endif
-#endif
-
-#ifndef BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
-#endif
-#endif
-
-#if defined(__GNUC__) && !defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
-#define BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
-#endif
-
-#if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
 
 extern "C"
 {
@@ -37,15 +28,13 @@ extern "C"
 #if !defined(BOOST_HAS_FLOAT128) && defined(__cplusplus)
 namespace boost
 {
-   #if defined(__GNUC__)
    __extension__ typedef __float128 float128_type;
-   #else
-   typedef __float128 float128_type;
-   #endif
 }
 #endif
 
-#endif // BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128
+#endif // __has_include(<quadmath.h>)
+#endif // defined(__has_include)
+#endif // defined(__GNUC__) && !defined(__clang__)
 
 #include <boost/multiprecision/number.hpp>
 #if defined(BOOST_MP_CPP_DOUBLE_FP_HAS_FLOAT128)
