@@ -11,32 +11,31 @@
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_fabs.hpp>
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_isinf.hpp>
 #include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_isnan.hpp>
-#include <boost/multiprecision/cpp_df_qf/cpp_df_qf_detail_ccmath_limits.hpp>
 
 #include <cmath>
 
 namespace boost { namespace multiprecision { namespace backends { namespace cpp_df_qf_detail { namespace ccmath {
 
 template <typename T>
-constexpr auto fpclassify(T x) -> typename std::enable_if<!std::is_integral<T>::value, int>::type
+constexpr auto fpclassify(T x) -> int
 {
-   if ((boost::multiprecision::backends::cpp_df_qf_detail::ccmath::isnan)(x))
+   if ((::boost::multiprecision::backends::cpp_df_qf_detail::ccmath::isnan)(x))
    {
       return FP_NAN;
    }
-   else if ((boost::multiprecision::backends::cpp_df_qf_detail::ccmath::isinf)(x))
+   else if ((::boost::multiprecision::backends::cpp_df_qf_detail::ccmath::isinf)(x))
    {
       return FP_INFINITE;
    }
    else
    {
-      const T fabs_x { boost::multiprecision::backends::cpp_df_qf_detail::ccmath::fabs(x) };
+      const T fabs_x { ::boost::multiprecision::backends::cpp_df_qf_detail::ccmath::fabs(x) };
 
       if (fabs_x == T(0))
       {
          return FP_ZERO;
       }
-      else if ((fabs_x > 0) && (fabs_x < (boost::multiprecision::backends::cpp_df_qf_detail::ccmath::numeric_limits<T>::min)()))
+      else if ((fabs_x > 0) && (fabs_x < (::boost::multiprecision::backends::cpp_df_qf_detail::ccmath::numeric_limits<T>::min)()))
       {
          return FP_SUBNORMAL;
       }
