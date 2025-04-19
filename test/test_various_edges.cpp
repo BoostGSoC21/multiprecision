@@ -15,11 +15,15 @@
 #include <boost/multiprecision/cpp_double_fp.hpp>
 #endif
 
+#include <array>
 #include <chrono>
+#include <cstddef>
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <limits>
 #include <random>
+#include <string>
 
 #if defined(__clang__)
 #  pragma clang diagnostic push
@@ -424,6 +428,48 @@ namespace local
       const unsigned long long conversion_result_max { static_cast<unsigned long long>(flt_x) };
 
       BOOST_TEST(result_is_ok = ((conversion_result_max == (std::numeric_limits<unsigned long long>::max)()) && result_is_ok));
+    }
+
+    {
+      using str_nans_array_type = std::array<std::string, std::size_t { UINT8_C(3) }>;
+
+      const str_nans_array_type str_nan_reps {{ "nan", "NaN", "NAN" }};
+
+      for(auto i = static_cast<std::size_t>(UINT8_C(0)); i < str_nan_reps.size(); ++i)
+      {
+        float_type flt_nan { float_type { str_nan_reps[i].c_str() } * dis(gen) };
+
+        const bool result_nan_str_is_ok { isnan(flt_nan) };
+
+        BOOST_TEST(result_is_ok = (result_nan_str_is_ok && result_is_ok));
+      }
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(32)); ++i)
+    {
+      static_cast<void>(i);
+
+      using ctrl_type  = boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>, boost::multiprecision::et_off>;
+
+      const float fuzz { dis(gen) };
+
+      const float_type flt_tiny    { (::std::numeric_limits<float_type>::min)() * fuzz };
+      const float_type flt_finite  { (::std::numeric_limits<float_type>::max)() * flt_tiny };
+      const float_type flt_finite2 { flt_tiny * (::std::numeric_limits<float_type>::max)() };
+
+      const ctrl_type ctrl_tiny   { ctrl_type { (::std::numeric_limits<float_type>::min)() } * fuzz };
+      const ctrl_type ctrl_finite { ctrl_type { (::std::numeric_limits<float_type>::max)() } * ctrl_tiny };
+
+      const bool
+        result_finite_is_ok
+        {
+             isfinite(flt_finite)
+          && isfinite(flt_finite2)
+          && local::is_close_fraction(flt_finite,  float_type { ctrl_finite }, std::numeric_limits<float_type>::epsilon() * 32)
+          && local::is_close_fraction(flt_finite2, float_type { ctrl_finite }, std::numeric_limits<float_type>::epsilon() * 32)
+        };
+
+      BOOST_TEST(result_is_ok = (result_finite_is_ok && result_is_ok));
     }
 
     return result_is_ok;
@@ -838,6 +884,274 @@ namespace local
     return result_is_ok;
   }
 
+  template<typename FloatType>
+  auto test_pow_n_edge() -> bool
+  {
+    using float_type   = FloatType;
+
+    std::mt19937_64 gen { time_point<typename std::mt19937_64::result_type>() };
+
+    std::uniform_real_distribution<float>
+      dist
+      (
+        static_cast<float>(1.01L),
+        static_cast<float>(1.04L)
+      );
+
+    std::uniform_int_distribution<int>
+      dist_n
+      (
+        static_cast<int>(INT8_C(2)),
+        static_cast<int>(INT8_C(12))
+      );
+
+    using std::fpclassify;
+    using std::isinf;
+    using std::pow;
+    using std::signbit;
+
+    auto result_is_ok = true;
+
+    for(auto index = 0U; index < 8U; ++index)
+    {
+      static_cast<void>(index);
+
+      const float_type flt_x { static_cast<float_type>(dist(gen)) };
+
+      const auto flt_nrm = pow(flt_x, 0);
+
+      const auto result_val_pow_zero_is_ok = (flt_nrm == static_cast<float_type>(1.0L));
+
+      BOOST_TEST(result_val_pow_zero_is_ok);
+
+      result_is_ok = (result_val_pow_zero_is_ok && result_is_ok);
+    }
+
+    for(auto index = 0U; index < 8U; ++index)
+    {
+      static_cast<void>(index);
+
+      const float_type arg_nan = ::my_nan<float_type>() * static_cast<float_type>(dist(gen));
+
+      const auto val_pow_nan = pow(arg_nan, dist_n(gen));
+
+      const auto result_val_pow_nan_is_ok = (isnan(val_pow_nan) && isnan(arg_nan));
+
+      BOOST_TEST(result_val_pow_nan_is_ok);
+
+      result_is_ok = (result_val_pow_nan_is_ok && result_is_ok);
+    }
+
+    for(auto index = 0U; index < 8U; ++index)
+    {
+      static_cast<void>(index);
+
+      const float_type arg_x_nrm  = static_cast<float_type>(dist(gen));
+      const float_type arg_p_zero = static_cast<float_type>(dist_n(gen)) * (::my_zero<float_type>() * static_cast<float_type>(dist(gen)));
+      const int        n_p_zero   = static_cast<int>(arg_p_zero);
+
+      const auto val_pow_zero = pow(arg_x_nrm, n_p_zero);
+
+      const auto result_val_pow_zero_is_ok = ((val_pow_zero == float_type { 1 }) && (n_p_zero == 0));
+
+      BOOST_TEST(result_val_pow_zero_is_ok);
+
+      result_is_ok = (result_val_pow_zero_is_ok && result_is_ok);
+    }
+
+    for(auto index = 0U; index < 8U; ++index)
+    {
+      static_cast<void>(index);
+
+      using ctrl_type  = boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>, boost::multiprecision::et_off>;
+
+      const float_type val_normal { float_type { float_type { 314 } / 100 } * static_cast<float_type>(dist(gen)) };
+      const ctrl_type val_ctrl { val_normal };
+
+      const int n_neg { -dist_n(gen) };
+
+      const float_type flt_zero_nrm { pow(val_normal, n_neg) };
+      const ctrl_type ctl_val { pow(val_ctrl, n_neg) };
+
+      const bool
+        result_val_nrm_n_neg_is_ok
+        {
+             (fpclassify(flt_zero_nrm) == FP_NORMAL)
+          && local::is_close_fraction(flt_zero_nrm, float_type { ctl_val }, std::numeric_limits<float_type>::epsilon() * 32)
+        };
+
+      BOOST_TEST(result_val_nrm_n_neg_is_ok);
+
+      result_is_ok = (result_val_nrm_n_neg_is_ok && result_is_ok);
+    }
+
+    for(auto index = 0U; index < 8U; ++index)
+    {
+      static_cast<void>(index);
+
+      using ctrl_type  = boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>, boost::multiprecision::et_off>;
+
+      const float_type val_zero { ::my_zero<float_type>() * static_cast<float_type>(dist(gen)) };
+      const ctrl_type val_ctrl { val_zero };
+
+      const int n_pos { dist_n(gen) };
+
+      const float_type flt_zero_pos { pow(val_zero, n_pos) };
+      const ctrl_type flt_zero_ctrl { pow(val_ctrl, n_pos) };
+
+      const bool
+        result_val_zero_pos_is_ok
+        {
+          (fpclassify(flt_zero_pos) == FP_ZERO) && (fpclassify(flt_zero_pos) == (fpclassify(flt_zero_ctrl)))
+        };
+
+      BOOST_TEST(result_val_zero_pos_is_ok);
+
+      result_is_ok = (result_val_zero_pos_is_ok && result_is_ok);
+    }
+
+    for(auto index = 0U; index < 8U; ++index)
+    {
+      static_cast<void>(index);
+
+      using ctrl_type  = boost::multiprecision::number<boost::multiprecision::cpp_dec_float<100>, boost::multiprecision::et_off>;
+
+      const float_type val_zero { ::my_zero<float_type>() * static_cast<float_type>(dist(gen)) };
+      const ctrl_type val_ctrl { val_zero };
+
+      const int n_neg { -dist_n(gen) };
+
+      const float_type flt_zero_neg { pow(val_zero, n_neg) };
+      const ctrl_type flt_zero_ctrl { pow(val_ctrl, n_neg) };
+
+      const bool result_val_zero_neg_is_ok { (isinf(flt_zero_neg) && isinf(flt_zero_ctrl)) };
+
+      BOOST_TEST(result_val_zero_neg_is_ok);
+
+      result_is_ok = (result_val_zero_neg_is_ok && result_is_ok);
+    }
+
+    for(auto index = static_cast<int>(INT8_C(-10)); index <= static_cast<int>(INT8_C(-2)); index += static_cast<int>(INT8_C(2)))
+    {
+      const float_type val_zero { ::my_zero<float_type>() * static_cast<float_type>(dist(gen)) };
+
+      const auto flt_zero_pos = pow(val_zero, static_cast<float_type>(index));
+
+      const auto result_val_zero_pos_is_ok = isinf(flt_zero_pos);
+
+      BOOST_TEST(result_val_zero_pos_is_ok);
+
+      result_is_ok = (result_val_zero_pos_is_ok && result_is_ok);
+    }
+
+    for(auto index = static_cast<int>(INT8_C(-11)); index <= static_cast<int>(INT8_C(-3)); index += static_cast<int>(INT8_C(2)))
+    {
+      const float_type val_something { ::my_one<float_type>() * static_cast<float_type>(dist(gen)) };
+
+      const int n_zero { static_cast<int>(::my_zero<float_type>() * static_cast<float_type>(dist(gen))) };
+
+      const auto flt_pow_zero = pow(val_something, n_zero);
+
+      const bool result_val_pow_zero_is_ok = { flt_pow_zero == float_type { 1.0F } };
+
+      BOOST_TEST(result_val_pow_zero_is_ok);
+
+      result_is_ok = (result_val_pow_zero_is_ok && result_is_ok);
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(8)); ++i)
+    {
+      static_cast<void>(i);
+
+      const auto flt_near_one = static_cast<float_type>(dist(gen));
+
+      const auto flt_inf_pos = pow(std::numeric_limits<float_type  >::infinity() * flt_near_one, dist_n(gen));
+
+      const auto result_val_inf_pos_is_ok = (fpclassify(flt_inf_pos) == FP_INFINITE);
+
+      BOOST_TEST(result_val_inf_pos_is_ok);
+
+      result_is_ok = (result_val_inf_pos_is_ok && result_is_ok);
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(8)); ++i)
+    {
+      static_cast<void>(i);
+
+      const auto flt_near_one = static_cast<float_type>(dist(gen));
+
+      const auto flt_inf_pos_n_neg = pow(std::numeric_limits<float_type  >::infinity() * flt_near_one, -dist_n(gen));
+
+      const auto result_val_inf_pos_n_neg_is_ok = (fpclassify(flt_inf_pos_n_neg) == FP_ZERO);
+
+      BOOST_TEST(result_val_inf_pos_n_neg_is_ok);
+
+      result_is_ok = (result_val_inf_pos_n_neg_is_ok && result_is_ok);
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(8)); ++i)
+    {
+      static_cast<void>(i);
+
+      const auto flt_near_one = static_cast<float_type>(dist(gen));
+
+      const auto flt_inf_neg = pow(-std::numeric_limits<float_type  >::infinity() * flt_near_one, -3);
+
+      const auto result_val_inf_neg_is_ok = (fpclassify(flt_inf_neg) == FP_ZERO);
+
+      BOOST_TEST(result_val_inf_neg_is_ok);
+
+      result_is_ok = (result_val_inf_neg_is_ok && result_is_ok);
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(8)); ++i)
+    {
+      static_cast<void>(i);
+
+      const auto flt_near_one = static_cast<float_type>(dist(gen));
+
+      const auto flt_inf_neg = pow(-std::numeric_limits<float_type>::infinity() * flt_near_one, 3);
+
+      const auto result_val_inf_neg_is_ok = (fpclassify(flt_inf_neg) == FP_INFINITE);
+
+      BOOST_TEST(result_val_inf_neg_is_ok);
+
+      result_is_ok = (result_val_inf_neg_is_ok && result_is_ok);
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(8)); ++i)
+    {
+      static_cast<void>(i);
+
+      const auto flt_near_one = static_cast<float_type>(dist(gen));
+
+      const auto flt_nan = pow(std::numeric_limits<float_type>::quiet_NaN() * static_cast<float_type>(flt_near_one), 0);
+
+      const auto result_val_nan_is_ok = (flt_nan == float_type { 1.0F });
+
+      BOOST_TEST(result_val_nan_is_ok);
+
+      result_is_ok = (result_val_nan_is_ok && result_is_ok);
+    }
+
+    for(auto i = static_cast<unsigned>(UINT8_C(0)); i < static_cast<unsigned>(UINT8_C(8)); ++i)
+    {
+      static_cast<void>(i);
+
+      const auto flt_near_one = static_cast<float_type>(dist(gen));
+
+      const auto flt_nan = pow(std::numeric_limits<float_type>::quiet_NaN() * static_cast<float_type>(flt_near_one), i + 1);
+
+      const auto result_val_nan_is_ok = isnan(flt_nan);
+
+      BOOST_TEST(result_val_nan_is_ok);
+
+      result_is_ok = (result_val_nan_is_ok && result_is_ok);
+    }
+
+    return result_is_ok;
+  }
+
 } // namespace local
 
 auto main() -> int
@@ -851,6 +1165,7 @@ auto main() -> int
     local::test_sqrt_edge<float_type>();
     local::test_exp_edge<float_type>();
     local::test_log_edge<float_type>();
+    local::test_pow_n_edge<float_type>();
   }
 
   {
@@ -861,6 +1176,7 @@ auto main() -> int
     local::test_sqrt_edge<float_type>();
     local::test_exp_edge<float_type>();
     local::test_log_edge<float_type>();
+    local::test_pow_n_edge<float_type>();
   }
 
   {
@@ -871,6 +1187,7 @@ auto main() -> int
     local::test_sqrt_edge<float_type>();
     local::test_exp_edge<float_type>();
     local::test_log_edge<float_type>();
+    local::test_pow_n_edge<float_type>();
   }
   #endif
 
@@ -883,6 +1200,7 @@ auto main() -> int
     local::test_sqrt_edge<float_type>();
     local::test_exp_edge<float_type>();
     local::test_log_edge<float_type>();
+    local::test_pow_n_edge<float_type>();
   }
 
   return boost::report_errors();
